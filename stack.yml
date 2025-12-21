@@ -1,0 +1,74 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: travelo
+      MYSQL_USER: travelo_user
+      MYSQL_PASSWORD: travelo_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - travelo-net
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s        
+
+  backend:
+    image: bouiguigne/images:backend-1.2
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/travelo?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: travelo_user
+      SPRING_DATASOURCE_PASSWORD: travelo_password
+    ports:
+      - "8080:8080"
+    networks:
+      - travelo-net
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s        
+
+  frontend:
+    image: bouiguigne/images:frontend-1.2
+    environment:
+      REACT_APP_API_URL: http://localhost:8080
+    ports:
+      - "3000:3000"
+    networks:
+      - travelo-net
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s    
+
+networks:
+  travelo-net:
+    driver: overlay
+
+volumes:
+  mysql_data:

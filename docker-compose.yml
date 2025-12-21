@@ -11,17 +11,14 @@ services:
       MYSQL_USER: travelo_user
       MYSQL_PASSWORD: travelo_password
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      
     networks:
       - travelo-network
 
   backend:
-    build:
-      context: ./travelo_backend
-      dockerfile: Dockerfile
+    image: bouiguigne/images:backend-1.2
     container_name: travelo-backend
     restart: unless-stopped
     environment:
@@ -36,9 +33,7 @@ services:
       - travelo-network
 
   frontend:
-    build:
-      context: ./travelo_frontend
-      dockerfile: Dockerfile
+    image: bouiguigne/images:frontend-1.2
     container_name: travelo-frontend
     restart: unless-stopped
     environment:
