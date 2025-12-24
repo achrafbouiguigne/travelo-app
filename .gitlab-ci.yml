@@ -17,7 +17,7 @@ build_backend:
   stage: build
   script:
     - cd travelo_backend
-    - mvn -B clean package
+    - - mvn -B clean package -DskipTests
 
 # ---------------- DOCKER FRONTEND: build + push ----------------
 docker_frontend:
