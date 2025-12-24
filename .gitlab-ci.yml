@@ -41,7 +41,7 @@ docker_frontend:
   needs:
     - build_frontend
 
-# ----------- DOCKER PACKAGE + PUSH BACKEND -----------
+# ----------- DOCKER PACKAGE + PUSH BACKEND  -----------
 docker_backend:
   image: docker:latest
   stage: package
