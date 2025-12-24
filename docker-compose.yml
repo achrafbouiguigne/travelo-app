@@ -1,53 +1,45 @@
-version: '3.8'
+
 
 services:
-  mysql:
+  travelo-database:
     image: mysql:8.0
     container_name: travelo-mysql
-    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: travelo
-      MYSQL_USER: travelo_user
-      MYSQL_PASSWORD: travelo_password
-    ports:
-      - "3307:3306"
+      MYSQL_ROOT_PASSWORD: chaima2003
+      MYSQL_DATABASE: travelo_db
     volumes:
-      - mysql_data:/var/lib/mysql
+      - travelo-mysql-data:/var/lib/mysql
     networks:
-      - travelo-network
+      - travelo-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pchaima2003"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   backend:
-    image: bouiguigne/images:backend-1.2
     container_name: travelo-backend
-    restart: unless-stopped
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/travelo?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: travelo_user
-      SPRING_DATASOURCE_PASSWORD: travelo_password
-    ports:
-      - "8080:8080"
+    build: ./travelo_backend
     depends_on:
-      - mysql
+      travelo-database:
+        condition: service_healthy
     networks:
-      - travelo-network
+      - travelo-net
 
   frontend:
-    image: bouiguigne/images:frontend-1.2
     container_name: travelo-frontend
-    restart: unless-stopped
-    environment:
-      REACT_APP_API_URL: http://localhost:8080
-    ports:
-      - "3000:3000"
+    build: ./travelo_frontend
     depends_on:
       - backend
+    ports:
+      - "3000:3000"
     networks:
-      - travelo-network
-
-networks:
-  travelo-network:
-    driver: bridge
+      - travelo-net
 
 volumes:
-  mysql_data:
+  travelo-mysql-data:
+
+networks:
+  travelo-net:
+    driver: bridge
+

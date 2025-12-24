@@ -1,0 +1,56 @@
+stages:
+  - build
+  - package
+
+# ----------- BUILD FRONTEND (React) -----------
+build_frontend:
+  image: node:20
+  stage: build
+  script:
+    - cd travelo_frontend
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - travelo_frontend/build/
+    expire_in: 1 week
+
+# ----------- BUILD BACKEND (React/Node) -----------
+build_backend:
+  image: node:20
+  stage: build
+  script:
+    - cd travelo_backend
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - travelo_backend/build/
+    expire_in: 1 week
+
+# ----------- DOCKER PACKAGE + PUSH FRONTEND -----------
+docker_frontend:
+  image: docker:latest
+  stage: package
+  services:
+    - docker:dind
+  script:
+    - docker login -u "$DOCKER_HUB_USERNAME" -p "$DOCKER_HUB_PASSWORD"
+    - docker build -t "$DOCKER_HUB_USERNAME/travelo-frontend:latest" travelo_frontend
+    - docker push "$DOCKER_HUB_USERNAME/travelo-frontend:latest"
+  needs:
+    - build_frontend
+
+# ----------- DOCKER PACKAGE + PUSH BACKEND -----------
+docker_backend:
+  image: docker:latest
+  stage: package
+  services:
+    - docker:dind
+  script:
+    - docker login -u "$DOCKER_HUB_USERNAME" -p "$DOCKER_HUB_PASSWORD"
+    - docker build -t "$DOCKER_HUB_USERNAME/travelo-backend:latest" travelo_backend
+    - docker push "$DOCKER_HUB_USERNAME/travelo-backend:latest"
+  needs:
+    - build_backend
+
