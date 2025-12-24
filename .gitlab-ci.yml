@@ -2,38 +2,31 @@ stages:
   - build
   - package
 
-# ----------- BUILD FRONTEND (React) -----------
+# ---------------- FRONTEND (React) ----------------
 build_frontend:
   image: node:20
   stage: build
   script:
     - cd travelo_frontend
-    - npm ci
-    - npm run build
-  artifacts:
-    paths:
-      - travelo_frontend/build/
-    expire_in: 1 week
+    - npm install
+    - CI=false npm run build
 
-# ----------- BUILD BACKEND (React/Node) -----------
+# ---------------- BACKEND (Spring Boot) ----------------
 build_backend:
-  image: node:20
+  image: maven:3-eclipse-temurin-17
   stage: build
   script:
     - cd travelo_backend
-    - npm ci
-    - npm run build
-  artifacts:
-    paths:
-      - travelo_backend/build/
-    expire_in: 1 week
+    - mvn -B clean package
 
-# ----------- DOCKER PACKAGE + PUSH FRONTEND -----------
+# ---------------- DOCKER FRONTEND: build + push ----------------
 docker_frontend:
   image: docker:latest
   stage: package
   services:
     - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
   script:
     - docker login -u "$DOCKER_HUB_USERNAME" -p "$DOCKER_HUB_PASSWORD"
     - docker build -t "$DOCKER_HUB_USERNAME/travelo-frontend:latest" travelo_frontend
@@ -41,16 +34,17 @@ docker_frontend:
   needs:
     - build_frontend
 
-# ----------- DOCKER PACKAGE + PUSH BACKEND  -----------
+# ---------------- DOCKER BACKEND: build + push ----------------
 docker_backend:
   image: docker:latest
   stage: package
   services:
     - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
   script:
     - docker login -u "$DOCKER_HUB_USERNAME" -p "$DOCKER_HUB_PASSWORD"
     - docker build -t "$DOCKER_HUB_USERNAME/travelo-backend:latest" travelo_backend
     - docker push "$DOCKER_HUB_USERNAME/travelo-backend:latest"
   needs:
     - build_backend
-
