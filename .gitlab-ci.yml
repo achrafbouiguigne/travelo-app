@@ -13,7 +13,7 @@ build_frontend:
 
 # ---------------- BACKEND (Spring Boot) ----------------
 build_backend:
-  image: maven:3-eclipse-temurin-17
+  image: maven:3-eclipse-temurin-23
   stage: build
   script:
     - cd travelo_backend
