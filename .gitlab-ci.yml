@@ -35,7 +35,7 @@ docker_frontend:
   needs:
     - build_frontend
 
-# ---------------- DOCKER BACKEND: build + push ----------------
+# ---------------- DOCKER BACKEND : build + push ----------------
 docker_backend:
   image: docker:latest
   stage: package
